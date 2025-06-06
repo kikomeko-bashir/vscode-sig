@@ -36,7 +36,7 @@ export async function restartClient(context: vscode.ExtensionContext): Promise<v
     }
 
     try {
-        const newClient = await startClient(result.exe, result.version);
+        const newClient = await startClient(result.exe);
         void stopClient();
         client = newClient;
         updateStatusItem(result.version);
@@ -50,25 +50,9 @@ export async function restartClient(context: vscode.ExtensionContext): Promise<v
     }
 }
 
-async function startClient(zlsPath: string, zlsVersion: semver.SemVer): Promise<LanguageClient> {
-    const configuration = vscode.workspace.getConfiguration("zig.zls");
-    const debugLog = configuration.get<boolean>("debugLog", false);
-
-    const args: string[] = [];
-
-    if (debugLog) {
-        /** `--enable-debug-log` has been deprecated in favor of `--log-level`. https://github.com/zigtools/zls/pull/1957 */
-        const zlsCLIRevampVersion = new semver.SemVer("0.14.0-50+3354fdc");
-        if (semver.lt(zlsVersion, zlsCLIRevampVersion)) {
-            args.push("--enable-debug-log");
-        } else {
-            args.push("--log-level", "debug");
-        }
-    }
-
+async function startClient(zlsPath: string): Promise<LanguageClient> {
     const serverOptions: ServerOptions = {
         command: zlsPath,
-        args: args,
     };
 
     const clientOptions: LanguageClientOptions = {
@@ -599,8 +583,7 @@ export async function activate(context: vscode.ExtensionContext) {
             // The `zig.path` config option is handled by `zigProvider.onChange`.
             if (
                 change.affectsConfiguration("zig.zls.enabled", undefined) ||
-                change.affectsConfiguration("zig.zls.path", undefined) ||
-                change.affectsConfiguration("zig.zls.debugLog", undefined)
+                change.affectsConfiguration("zig.zls.path", undefined)
             ) {
                 await restartClient(context);
             }

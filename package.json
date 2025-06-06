@@ -190,11 +190,6 @@
           "default": [],
           "description": "Specify which additional arguments should be passed to `zig build` when running build on save. Use the `--build-file` argument to override which build file should be used."
         },
-        "zig.zls.debugLog": {
-          "scope": "resource",
-          "type": "boolean",
-          "description": "Enable debug logging in release builds of ZLS."
-        },
         "zig.zls.trace.server": {
           "scope": "window",
           "type": "string",
