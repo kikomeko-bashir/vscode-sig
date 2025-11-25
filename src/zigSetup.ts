@@ -143,7 +143,7 @@ async function getVersions(context: vscode.ExtensionContext): Promise<zigUtil.Zi
     }
     if (result.length === 0) {
         throw Error(
-            `no pre-built Zig is available for your system '${zigUtil.getZigArchName("arm")}-${zigUtil.getZigOSName()}}', you can build it yourself using https://github.com/ziglang/zig-bootstrap`,
+            `no pre-built Zig is available for your system '${zigUtil.getZigArchName("arm")}-${zigUtil.getZigOSName()}}', you can build it yourself using https://codeberg.org/ziglang/zig-bootstrap`,
         );
     }
     sortVersions(result);

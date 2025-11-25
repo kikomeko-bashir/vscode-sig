@@ -306,7 +306,7 @@ async function getTarExePath(): Promise<string | null> {
         // We may be running from within Git Bash which adds GNU tar to
         // the $PATH but we need bsdtar to extract zip files so we look
         // in the system directory before falling back to the $PATH.
-        // See https://github.com/ziglang/vscode-zig/issues/382
+        // See https://codeberg.org/ziglang/vscode-zig/issues/382
         const tarPath = `${process.env["SYSTEMROOT"]}\\system32\\tar.exe`;
         try {
             await vscode.workspace.fs.stat(vscode.Uri.file(tarPath));

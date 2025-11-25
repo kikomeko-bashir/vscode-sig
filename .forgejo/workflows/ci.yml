@@ -28,5 +28,5 @@ jobs:
 
       - name: package extension
         run: |
-          npx vsce package
+          npx vsce package --baseContentUrl https://codeberg.org/ziglang/vscode-zig
           ls -lt *.vsix

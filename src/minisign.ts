@@ -1,5 +1,5 @@
 /**
- * Ported from: https://github.com/mlugg/setup-zig/blob/main/minisign.js
+ * Ported from: https://codeberg.org/mlugg/setup-zig/src/branch/main/minisign.js
  *
  * Copyright Matthew Lugg
  *
