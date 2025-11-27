@@ -21,7 +21,7 @@ jobs:
     runs-on: [self-hosted, x86_64-linux]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: https://codeberg.org/ziglang/checkout@19af6bac491e2534a4687a50ee84fa7f13258d28
 
       - run: npm install
       - run: npm run build
