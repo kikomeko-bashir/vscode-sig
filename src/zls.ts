@@ -168,6 +168,8 @@ function configurationMiddleware(params: ConfigurationParams): LSPAny[] | Respon
         const updateConfigOption = (section: string, value: unknown) => {
             if (section === "zls.zigExePath") {
                 return zigProvider.getZigPath();
+            } else if (section === "zls.zigLibPath") {
+                value = configuration.get("libPath");
             }
 
             if (typeof value === "string") {
@@ -247,6 +249,8 @@ function configurationMiddleware(params: ConfigurationParams): LSPAny[] | Respon
                 ...options,
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 zig_exe_path: zigProvider.getZigPath(),
+                // eslint-disable-next-line @typescript-eslint/naming-convention
+                zig_lib_path: configuration.get("libPath") ?? undefined,
             });
         } else if (param.section.startsWith("zls.")) {
             // ZLS has requested a specific config option.
@@ -506,6 +510,29 @@ export async function activate(context: vscode.ExtensionContext) {
             if (inspect?.workspaceValue) {
                 await zigUtil.workspaceConfigUpdateNoThrow(zigConfig, "buildOnSaveArgs", inspect.workspaceValue, false);
                 await zigUtil.workspaceConfigUpdateNoThrow(zlsConfig, "buildOnSaveArgs", undefined, false);
+            }
+        }
+
+        // convert `zig.zls.zigLibPath` to `zig.libPath`
+        {
+            const inspect = zlsConfig.inspect("zigLibPath");
+            if (inspect?.globalValue !== undefined) {
+                await zigUtil.workspaceConfigUpdateNoThrow(
+                    vscode.workspace.getConfiguration("zig"),
+                    "libPath",
+                    inspect.globalValue,
+                    true,
+                );
+                await zigUtil.workspaceConfigUpdateNoThrow(zlsConfig, "zigLibPath", undefined, true);
+            }
+            if (inspect?.workspaceValue !== undefined) {
+                await zigUtil.workspaceConfigUpdateNoThrow(
+                    vscode.workspace.getConfiguration("zig"),
+                    "libPath",
+                    inspect.workspaceValue,
+                    false,
+                );
+                await zigUtil.workspaceConfigUpdateNoThrow(zlsConfig, "zigLibPath", undefined, false);
             }
         }
     }

@@ -526,13 +526,22 @@ function updateLanguageStatusItem(item: vscode.LanguageStatusItem, version: semv
     };
 }
 
-function updateZigEnvironmentVariableCollection(context: vscode.ExtensionContext, zigExePath: string | null) {
+function updateZigPathEnvironmentVariableCollection(context: vscode.ExtensionContext, zigExePath: string | null) {
     if (zigExePath) {
         const envValue = path.dirname(zigExePath) + path.delimiter;
         // This will take priority over a user-defined PATH values.
         context.environmentVariableCollection.prepend("PATH", envValue);
     } else {
         context.environmentVariableCollection.delete("PATH");
+    }
+}
+
+function updateZigLibPathEnvironmentVariableCollection(context: vscode.ExtensionContext) {
+    const zigLibPath = vscode.workspace.getConfiguration("zig").get<string>("libPath");
+    if (zigLibPath) {
+        context.environmentVariableCollection.append("ZIG_LIB_DIR", zigLibPath);
+    } else {
+        context.environmentVariableCollection.delete("ZIG_LIB_DIR");
     }
 }
 
@@ -547,7 +556,8 @@ async function updateStatus(context: vscode.ExtensionContext): Promise<void> {
 
     updateStatusItem(statusItem, zigVersion);
     updateLanguageStatusItem(languageStatusItem, zigVersion);
-    updateZigEnvironmentVariableCollection(context, zigPath);
+    updateZigPathEnvironmentVariableCollection(context, zigPath);
+    updateZigLibPathEnvironmentVariableCollection(context);
 
     // Try to check whether the Zig version satifies the `minimum_zig_version` in `build.zig.zon`
 
@@ -790,6 +800,9 @@ export async function setupZig(context: vscode.ExtensionContext) {
                     zigProvider.set(result);
                 }
                 void refreshZigInstallation();
+            }
+            if (change.affectsConfiguration("zig.libPath")) {
+                updateZigLibPathEnvironmentVariableCollection(context);
             }
         }),
         vscode.window.onDidChangeActiveTextEditor(onDidChangeActiveTextEditor),

@@ -93,6 +93,11 @@
           "type": "string",
           "description": "Set a custom path to the `zig` executable. Example: `C:/zig-windows-x86_64-0.13.0/zig.exe`. The string \"zig\" means lookup zig in PATH."
         },
+        "zig.libPath": {
+          "scope": "machine-overridable",
+          "type": "string",
+          "description": "Override the Zig library path. Will be automatically resolved by the Zig compiler."
+        },
         "zig.version": {
           "scope": "resource",
           "type": "string",
@@ -317,12 +322,6 @@
           "scope": "resource",
           "type": "string",
           "description": "Override the path to 'builtin' module. Automatically resolved if unset.",
-          "format": "path"
-        },
-        "zig.zls.zigLibPath": {
-          "scope": "resource",
-          "type": "string",
-          "description": "Override the Zig library path. Will be automatically resolved using the 'zig_exe_path'.",
           "format": "path"
         },
         "zig.zls.buildRunnerPath": {
