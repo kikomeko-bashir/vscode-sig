@@ -32,7 +32,8 @@
       },
       "explorer.autoRevealExclude": {
         "**/.zig-cache": true,
-        "**/zig-cache": true
+        "**/zig-cache": true,
+        "**/zig-pkg": true
       }
     },
     "languages": [
