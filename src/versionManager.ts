@@ -220,8 +220,8 @@ async function installFromMirror(
         throw new Error(`signature verification failed for '${artifactUrl.toString()}'`);
     }
 
-    const match = /^timestamp:\d+\s+file:([^\s]+)\s+hashed$/.test(signature.trustedComment.toString());
-    if (!match) {
+    const match = /^timestamp:\d+\s+file:([^\s]+)\s+hashed$/.exec(signature.trustedComment.toString());
+    if (match?.[0] !== fileName) {
         throw new Error(`filename verification failed for '${artifactUrl.toString()}'`);
     }
 
