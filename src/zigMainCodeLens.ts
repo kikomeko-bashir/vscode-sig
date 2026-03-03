@@ -2,6 +2,7 @@ import vscode from "vscode";
 
 import childProcess from "child_process";
 import fs from "fs";
+import os from "os";
 import path from "path";
 import util from "util";
 
@@ -49,21 +50,62 @@ export default class ZigMainCodeLensProvider implements vscode.CodeLensProvider 
 
 function zigRun() {
     if (!vscode.window.activeTextEditor) return;
-    const zigPath = zigProvider.getZigPath();
+    let zigPath = zigProvider.getZigPath();
     if (!zigPath) return;
     const filePath = vscode.window.activeTextEditor.document.uri.fsPath;
     const terminalName = "Run Zig Program";
     const terminals = vscode.window.terminals.filter((t) => t.name === terminalName && getTerminalState(t) === false);
     const terminal = terminals.length > 0 ? terminals[0] : vscode.window.createTerminal(terminalName);
-    const callOperator = /(powershell.exe$|powershell$|pwsh.exe$|pwsh$)/.test(vscode.env.shell) ? "& " : "";
     terminal.show();
     const wsFolder = getWorkspaceFolder(filePath);
+    zigPath = escapePath(zigPath);
+    let targetPath = escapePath(filePath);
+    const activeResolver = pathSeparatorResolvers.find((r) => r.checkEnv());
+    if (activeResolver) {
+        zigPath = activeResolver.formatZigCmd(zigPath);
+        targetPath = activeResolver.formatTargetPath(targetPath);
+    }
     if (wsFolder && isWorkspaceFile(filePath) && hasBuildFile(wsFolder.uri.fsPath)) {
-        terminal.sendText(`${callOperator}${escapePath(zigPath)} build run`);
+        terminal.sendText(`${zigPath} build run`);
         return;
     }
-    terminal.sendText(`${callOperator}${escapePath(zigPath)} run ${escapePath(filePath)}`);
+    terminal.sendText(`${zigPath} run ${targetPath}`);
 }
+
+interface PathSeparatorResolver {
+    checkEnv(): boolean;
+    formatZigCmd(zigPath: string): string;
+    formatTargetPath(targetPath: string): string;
+}
+
+class NushellOnWindowsResolver {
+    checkEnv(): boolean {
+        return /nu.exe$|nu$/.test(vscode.env.shell) && os.platform() === "win32";
+    }
+    formatZigCmd(zigPath: string): string {
+        return `^${zigPath.replaceAll("\\", "/")}`;
+    }
+    formatTargetPath(targetPath: string): string {
+        return targetPath.replaceAll("\\", "/");
+    }
+}
+
+class PowerShellOnWindowsResolver {
+    checkEnv(): boolean {
+        return /(powershell.exe$|powershell$|pwsh.exe$|pwsh$)/.test(vscode.env.shell) && os.platform() === "win32";
+    }
+    formatZigCmd(zigPath: string): string {
+        return `& ${zigPath}`;
+    }
+    formatTargetPath(targetPath: string): string {
+        return targetPath;
+    }
+}
+
+const pathSeparatorResolvers: PathSeparatorResolver[] = [
+    new NushellOnWindowsResolver(),
+    new PowerShellOnWindowsResolver(),
+];
 
 function escapePath(rawPath: string): string {
     if (/[ !"#$&'()*,;:<>?\[\\\]^`{|}]/.test(rawPath)) {
