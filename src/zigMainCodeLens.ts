@@ -31,10 +31,14 @@ export default class ZigMainCodeLensProvider implements vscode.CodeLensProvider 
             const range = document.lineAt(targetLine).range;
 
             codeLenses.push(
-                new vscode.CodeLens(range, { title: "Run", command: "zig.run", arguments: [document.uri.fsPath] }),
+                new vscode.CodeLens(range, { title: "▶ Run", command: "zig.run", arguments: [document.uri.fsPath] }),
             );
             codeLenses.push(
-                new vscode.CodeLens(range, { title: "Debug", command: "zig.debug", arguments: [document.uri.fsPath] }),
+                new vscode.CodeLens(range, {
+                    title: "⚙ Debug",
+                    command: "zig.debug",
+                    arguments: [document.uri.fsPath],
+                }),
             );
         }
         return codeLenses;
