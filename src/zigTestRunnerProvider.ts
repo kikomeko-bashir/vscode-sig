@@ -212,13 +212,14 @@ export default class ZigTestRunnerProvider {
         const config = vscode.workspace.getConfiguration("zig");
         const debugAdapter = config.get<string>("debugAdapter", "lldb");
 
+        const wsFolder = getWorkspaceFolder(testItem.uri.fsPath)?.uri.fsPath ?? path.dirname(testItem.uri.fsPath);
         const testBinaryPath = await this.buildTestBinary(run, testItem.uri.fsPath, getTestDesc(testItem));
         const debugConfig: vscode.DebugConfiguration = {
             type: debugAdapter,
             name: `Debug ${testItem.label}`,
             request: "launch",
             program: testBinaryPath,
-            cwd: path.dirname(testItem.uri.fsPath),
+            cwd: wsFolder,
             stopAtEntry: false,
         };
         return new Promise((resolve, reject) => {
