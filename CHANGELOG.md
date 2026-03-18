@@ -1,3 +1,10 @@
+## 0.6.18
+- Add `zig-pkg` directory to `explorer.autoRevealExclude` (@Techatrix)
+- Verify minisign trusted comment against requested filename (@Techatrix)
+- Fix 'Run' and 'Debug' codelenses on Nushell on Windows (@Yuyu)
+- Add utf-8 icon before codelenses 'Run' and 'Debug' (@Yuyu)
+- Set workspace folder as cwd when using 'Debug' codelens (@tlbdk)
+
 ## 0.6.17
 - Fix invalid minising URL breaking package installs (@Techatrix)
 
