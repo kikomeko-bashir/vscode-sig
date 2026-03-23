@@ -124,7 +124,7 @@
         },
         {
           "name": "keyword.storage.zig",
-          "match": "\\b(extern|packed|export|pub|noalias|inline|comptime|volatile|align|linksection|threadlocal|allowzero|noinline|callconv)\\b"
+          "match": "\\b(extern|packed|export|pub|noalias|inline|comptime|volatile|align|linksection|threadlocal|allowzero|noinline|callconv|addrspace)\\b"
         },
         {
           "name": "keyword.structure.zig",
