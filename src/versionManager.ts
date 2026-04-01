@@ -165,8 +165,8 @@ async function installFromMirror(
      * of a `source` query parameter to specify what is making this request.
      * This extension is published as `ziglang.vscode-zig` so we use base it off that.
      */
-    artifactUrl.searchParams.set("source", "ziglang-vscode-zig");
-    artifactMinisignUrl.searchParams.set("source", "ziglang-vscode-zig");
+    artifactUrl.searchParams.set("source", "sb0ltd-vscode-sig");
+    artifactMinisignUrl.searchParams.set("source", "sb0ltd-vscode-sig");
 
     const signatureResponse = await fetch(artifactMinisignUrl, {
         signal: abortController.signal,

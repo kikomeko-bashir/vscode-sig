@@ -1,14 +1,14 @@
 {
-  "name": "vscode-zig",
-  "displayName": "Zig Language",
-  "description": "Language support for the Zig programming language",
+  "name": "vscode-sig",
+  "displayName": "Sig",
+  "description": "Sig — Strict Zig. A capacity-first memory model layer on top of the Zig compiler.",
   "version": "0.6.18",
-  "publisher": "ziglang",
+  "publisher": "sb0ltd",
   "icon": "images/zig-icon.png",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://codeberg.org/ziglang/vscode-zig"
+    "url": "https://github.com/SB0LTD/sig"
   },
   "engines": {
     "vscode": "^1.90.0"
@@ -19,21 +19,32 @@
   "activationEvents": [
     "workspaceContains:build.zig",
     "workspaceContains:build.zig.zon",
-    "workspaceContains:./.zigversion"
+    "workspaceContains:./.zigversion",
+    "workspaceContains:build.sig",
+    "workspaceContains:./.sigversion"
   ],
   "main": "./out/extension",
   "contributes": {
     "configurationDefaults": {
       "[zig]": {
         "editor.formatOnSave": true,
-        "editor.defaultFormatter": "ziglang.vscode-zig",
+        "editor.defaultFormatter": "sb0ltd.vscode-sig",
+        "editor.stickyScroll.defaultModel": "foldingProviderModel",
+        "files.eol": "\n"
+      },
+      "[sig]": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "sb0ltd.vscode-sig",
         "editor.stickyScroll.defaultModel": "foldingProviderModel",
         "files.eol": "\n"
       },
       "explorer.autoRevealExclude": {
         "**/.zig-cache": true,
         "**/zig-cache": true,
-        "**/zig-pkg": true
+        "**/zig-pkg": true,
+        "**/.sig-cache": true,
+        "**/sig-cache": true,
+        "**/sig-pkg": true
       }
     },
     "languages": [
@@ -47,11 +58,26 @@
           "Zig"
         ],
         "configuration": "./language-configuration.json"
+      },
+      {
+        "id": "sig",
+        "extensions": [
+          ".sig"
+        ],
+        "aliases": [
+          "Sig"
+        ],
+        "configuration": "./language-configuration.json"
       }
     ],
     "grammars": [
       {
         "language": "zig",
+        "scopeName": "source.zig",
+        "path": "./syntaxes/zig.tmLanguage.json"
+      },
+      {
+        "language": "sig",
         "scopeName": "source.zig",
         "path": "./syntaxes/zig.tmLanguage.json"
       }
@@ -77,17 +103,51 @@
           "beginsPattern": "^Build Summary:",
           "endsPattern": "^error: (\\d+ compilation errors|the following command failed with )"
         }
+      },
+      {
+        "name": "sig",
+        "owner": "sig",
+        "fileLocation": [
+          "relative",
+          "${workspaceFolder}"
+        ],
+        "pattern": {
+          "regexp": "([^\\s]*):(\\d+):(\\d+):\\s+(?:fatal\\s+)?(note|error):\\s+(.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "message": 5
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^Build Summary:",
+          "endsPattern": "^error: (\\d+ compilation errors|the following command failed with )"
+        }
       }
     ],
     "taskDefinitions": [
       {
         "type": "zig"
+      },
+      {
+        "type": "sig"
       }
     ],
     "configuration": {
       "type": "object",
-      "title": "Zig",
+      "title": "Sig",
       "properties": {
+        "sig.path": {
+          "scope": "machine-overridable",
+          "type": "string",
+          "description": "Set a custom path to the `sig` executable. The string \"sig\" means lookup sig in PATH."
+        },
+        "sig.version": {
+          "scope": "resource",
+          "type": "string",
+          "description": "Specify which Sig version should be installed. Takes priority over a `.sigversion` file."
+        },
         "zig.path": {
           "scope": "machine-overridable",
           "type": "string",
@@ -346,25 +406,25 @@
     "commands": [
       {
         "command": "zig.run",
-        "title": "Run Zig",
-        "category": "Zig",
-        "description": "Run the current Zig project / file"
+        "title": "Run",
+        "category": "Sig",
+        "description": "Run the current Sig project / file"
       },
       {
         "command": "zig.debug",
-        "title": "Debug Zig",
-        "category": "Zig",
-        "description": "Debug the current Zig project / file"
+        "title": "Debug",
+        "category": "Sig",
+        "description": "Debug the current Sig project / file"
       },
       {
         "command": "zig.install",
-        "title": "Install Zig",
-        "category": "Zig Setup"
+        "title": "Install Zig Compiler",
+        "category": "Sig Setup"
       },
       {
         "command": "zig.toggleMultilineStringLiteral",
         "title": "Toggle Multiline String Literal",
-        "category": "Zig"
+        "category": "Sig"
       },
       {
         "command": "zig.zls.enable",
@@ -386,7 +446,7 @@
       {
         "command": "zig.toggleMultilineStringLiteral",
         "key": "alt+m alt+s",
-        "when": "editorTextFocus && editorLangId == 'zig'"
+        "when": "editorTextFocus && editorLangId =~ /^(zig|sig)$/"
       }
     ],
     "jsonValidation": [
