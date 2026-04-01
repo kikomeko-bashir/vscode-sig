@@ -4,7 +4,7 @@
   "description": "Sig — Strict Zig. A capacity-first memory model layer on top of the Zig compiler.",
   "version": "0.6.18",
   "publisher": "kikomekobashir",
-  "icon": "images/zig-icon.png",
+  "icon": "images/sig-icon.png",
   "license": "MIT",
   "repository": {
     "type": "git",
