@@ -1,13 +1,15 @@
 import vscode from "vscode";
 
+import { ZIG_SIG_FILE_MODE, isZigOrSigLanguage } from "./zigUtil";
 import { activate as activateZls, deactivate as deactivateZls } from "./zls";
-import ZigMainCodeLensProvider from "./zigMainCodeLens";
-import ZigTestRunnerProvider from "./zigTestRunnerProvider";
 import { registerBuildOnSaveProvider } from "./zigBuildOnSaveProvider";
 import { registerDiagnosticsProvider } from "./zigDiagnosticsProvider";
 import { registerDocumentFormatting } from "./zigFormat";
 import { registerTerminalStateManagement } from "./terminalState";
 import { setupZig } from "./zigSetup";
+
+import ZigMainCodeLensProvider from "./zigMainCodeLens";
+import ZigTestRunnerProvider from "./zigTestRunnerProvider";
 
 export async function activate(context: vscode.ExtensionContext) {
     await setupZig(context).finally(() => {
@@ -21,10 +23,7 @@ export async function activate(context: vscode.ExtensionContext) {
         registerTerminalStateManagement();
         ZigMainCodeLensProvider.registerCommands(context);
         context.subscriptions.push(
-            vscode.languages.registerCodeLensProvider(
-                { language: "zig", scheme: "file" },
-                new ZigMainCodeLensProvider(),
-            ),
+            vscode.languages.registerCodeLensProvider(ZIG_SIG_FILE_MODE, new ZigMainCodeLensProvider()),
             vscode.commands.registerCommand("zig.toggleMultilineStringLiteral", toggleMultilineStringLiteral),
         );
 
@@ -40,7 +39,7 @@ async function toggleMultilineStringLiteral() {
     const editor = vscode.window.activeTextEditor;
     if (!editor) return;
     const { document, selection } = editor;
-    if (document.languageId !== "zig") return;
+    if (!isZigOrSigLanguage(document.languageId)) return;
 
     let newText = "";
     let range = new vscode.Range(selection.start, selection.end);

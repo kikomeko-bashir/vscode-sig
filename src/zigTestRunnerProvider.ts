@@ -6,7 +6,7 @@ import util from "util";
 
 import { DebouncedFunc, throttle } from "lodash-es";
 
-import { getWorkspaceFolder, isWorkspaceFile, workspaceConfigUpdateNoThrow } from "./zigUtil";
+import { getWorkspaceFolder, isWorkspaceFile, isZigOrSigLanguage, workspaceConfigUpdateNoThrow } from "./zigUtil";
 import { zigProvider } from "./zigSetup";
 
 const execFile = util.promisify(childProcess.execFile);
@@ -24,7 +24,7 @@ export default class ZigTestRunnerProvider {
             { trailing: true },
         );
 
-        this.testController = vscode.tests.createTestController("zigTestController", "Zig Tests");
+        this.testController = vscode.tests.createTestController("zigTestController", "Sig Tests");
         this.testController.createRunProfile("Run", vscode.TestRunProfileKind.Run, this.runTests.bind(this), true);
         this.testController.createRunProfile(
             "Debug",
@@ -68,7 +68,7 @@ export default class ZigTestRunnerProvider {
     }
 
     private _updateTestItems(textDocument: vscode.TextDocument) {
-        if (textDocument.languageId !== "zig") return;
+        if (!isZigOrSigLanguage(textDocument.languageId)) return;
 
         const regex = /^(?![ \t]*\/\/\/?\s*)[ \t]*\btest\s+(?:"([^"]+)"|([A-Za-z0-9_]\w*)|@"([^"]+)")\s*\{/gm;
 
@@ -124,7 +124,7 @@ export default class ZigTestRunnerProvider {
         const config = vscode.workspace.getConfiguration("zig");
         const zigPath = zigProvider.getZigPath();
         if (!zigPath) {
-            return { output: "Unable to run test without Zig", success: false };
+            return { output: "Unable to run test without Sig", success: false };
         }
         if (test.uri === undefined) {
             return { output: "Unable to determine file location", success: false };
@@ -280,7 +280,7 @@ export default class ZigTestRunnerProvider {
         const config = vscode.workspace.getConfiguration("zig");
         const zigPath = zigProvider.getZigPath();
         if (!zigPath) {
-            throw new Error("Unable to build test binary without Zig");
+            throw new Error("Unable to build test binary without Sig");
         }
 
         const wsFolder = getWorkspaceFolder(testFilePath)?.uri.fsPath ?? path.dirname(testFilePath);

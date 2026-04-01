@@ -19,6 +19,8 @@ import { zigProvider } from "./zigSetup";
 const ZIG_MODE = [
     { language: "zig", scheme: "file" },
     { language: "zig", scheme: "untitled" },
+    { language: "sig", scheme: "file" },
+    { language: "sig", scheme: "untitled" },
 ];
 
 let versionManagerConfig: versionManager.Config;

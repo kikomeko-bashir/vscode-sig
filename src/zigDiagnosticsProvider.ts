@@ -8,6 +8,7 @@ import { throttle } from "lodash-es";
 
 import * as semver from "semver";
 import * as zls from "./zls";
+import { isZigOrSigLanguage } from "./zigUtil";
 import { zigProvider } from "./zigSetup";
 
 export function registerDiagnosticsProvider(): vscode.Disposable {
@@ -19,7 +20,7 @@ export function registerDiagnosticsProvider(): vscode.Disposable {
     const throttledCollectAstCheckDiagnostics = throttle(collectAstCheckDiagnostics, 16, { trailing: true });
 
     vscode.workspace.onDidChangeTextDocument((change) => {
-        if (change.document.languageId !== "zig") {
+        if (!isZigOrSigLanguage(change.document.languageId)) {
             return;
         }
         if (zls.client !== null) {

@@ -8,12 +8,14 @@ import semver from "semver";
 import * as minisign from "./minisign";
 import * as versionManager from "./versionManager";
 import * as zigUtil from "./zigUtil";
+import { SigProvider } from "./sigProvider";
 import { ZigProvider } from "./zigProvider";
 
 let statusItem: vscode.StatusBarItem;
 let languageStatusItem: vscode.LanguageStatusItem;
 let versionManagerConfig: versionManager.Config;
 export let zigProvider: ZigProvider;
+export let sigProvider: SigProvider;
 
 /** Removes the `zig.path` config option. */
 async function installZig(context: vscode.ExtensionContext, temporaryVersion?: semver.SemVer) {
@@ -283,7 +285,7 @@ async function selectVersionAndInstall(context: vscode.ExtensionContext) {
     }
 
     const selection = await vscode.window.showQuickPick(items, {
-        title: "Select Zig version to install",
+        title: "Select Zig compiler version to install",
         canPickMany: false,
         placeHolder: placeholderVersion?.raw,
     });
@@ -302,7 +304,7 @@ async function selectVersionAndInstall(context: vscode.ExtensionContext) {
                 canSelectFiles: true,
                 canSelectFolders: false,
                 canSelectMany: false,
-                title: "Select Zig executable",
+                title: "Select Zig compiler executable",
             });
             if (!uris) return;
             await zigProvider.setAndSave(uris[0].fsPath);
@@ -339,7 +341,7 @@ async function showUpdateWorkspaceVersionDialog(
         }
 
         const response = await vscode.window.showInformationMessage(
-            `Would you like to save Zig ${version.toString()} in this workspace?`,
+            `Would you like to save Zig compiler ${version.toString()} in this workspace?`,
             buttonName,
         );
         if (!response) return;
@@ -496,9 +498,9 @@ async function getWantedZigVersion(
 }
 
 function updateStatusItem(item: vscode.StatusBarItem, version: semver.SemVer | null) {
-    item.name = "Zig Version";
+    item.name = "Sig Version";
     item.text = version?.toString() ?? "not installed";
-    item.tooltip = "Select Zig Version";
+    item.tooltip = "Select Sig Version";
     item.command = {
         title: "Select Version",
         command: "zig.install",
@@ -511,13 +513,13 @@ function updateStatusItem(item: vscode.StatusBarItem, version: semver.SemVer | n
 }
 
 function updateLanguageStatusItem(item: vscode.LanguageStatusItem, version: semver.SemVer | null) {
-    item.name = "Zig";
+    item.name = "Sig";
     if (version) {
-        item.text = `Zig ${version.toString()}`;
-        item.detail = "Zig Version";
+        item.text = `Sig ${version.toString()}`;
+        item.detail = "Sig Version";
         item.severity = vscode.LanguageStatusSeverity.Information;
     } else {
-        item.text = "Zig not installed";
+        item.text = "Sig not installed";
         item.severity = vscode.LanguageStatusSeverity.Error;
     }
     item.command = {
@@ -570,7 +572,7 @@ async function updateStatus(context: vscode.ExtensionContext): Promise<void> {
 
     void vscode.window
         .showWarningMessage(
-            `Your Zig version '${zigVersion.toString()}' does not satisfy the minimum Zig version '${buildZigZonMetadata.minimumZigVersion.toString()}' of your project.`,
+            `Your Zig compiler version '${zigVersion.toString()}' does not satisfy the minimum version '${buildZigZonMetadata.minimumZigVersion.toString()}' of your project.`,
             "update Zig",
             "open build.zig.zon",
         )
@@ -695,7 +697,7 @@ export async function setupZig(context: vscode.ExtensionContext) {
         case "netbsd":
         case "haiku":
             vscode.workspace.onDidSaveTextDocument(async (document) => {
-                if (document.languageId !== "zig") return;
+                if (document.languageId !== "zig" && document.languageId !== "sig") return;
                 if (document.uri.scheme !== "file") return;
 
                 const zigVersion = zigProvider.getZigVersion();
@@ -751,15 +753,21 @@ export async function setupZig(context: vscode.ExtensionContext) {
     await versionManager.convertOldInstallPrefixes(versionManagerConfig);
 
     zigProvider = new ZigProvider();
+    sigProvider = new SigProvider();
 
     /** There two status items because there doesn't seem to be a way to pin a language status item by default. */
     statusItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, -1);
-    languageStatusItem = vscode.languages.createLanguageStatusItem("zig.status", { language: "zig" });
+    languageStatusItem = vscode.languages.createLanguageStatusItem("zig.status", [
+        { language: "zig" },
+        { language: "sig" },
+    ]);
 
-    context.environmentVariableCollection.description = "Add Zig to PATH";
+    context.environmentVariableCollection.description = "Add Sig to PATH";
 
     const watcher1 = vscode.workspace.createFileSystemWatcher("**/.zigversion");
     const watcher2 = vscode.workspace.createFileSystemWatcher("**/build.zig.zon");
+    const watcher3 = vscode.workspace.createFileSystemWatcher("**/.sigversion");
+    const watcher4 = vscode.workspace.createFileSystemWatcher("**/build.sig");
 
     const refreshZigInstallation = zigUtil.asyncDebounce(async () => {
         if (!vscode.workspace.getConfiguration("zig").get<string>("path")) {
@@ -775,7 +783,7 @@ export async function setupZig(context: vscode.ExtensionContext) {
     await updateStatus(context);
 
     const onDidChangeActiveTextEditor = (editor: vscode.TextEditor | undefined) => {
-        if (editor?.document.languageId === "zig") {
+        if (editor?.document.languageId === "zig" || editor?.document.languageId === "sig") {
             statusItem.show();
         } else {
             statusItem.hide();
@@ -804,6 +812,12 @@ export async function setupZig(context: vscode.ExtensionContext) {
             if (change.affectsConfiguration("zig.libPath")) {
                 updateZigLibPathEnvironmentVariableCollection(context);
             }
+            if (change.affectsConfiguration("sig.path")) {
+                const result = sigProvider.resolveSigPathConfigOption();
+                if (result) {
+                    sigProvider.set(result);
+                }
+            }
         }),
         vscode.window.onDidChangeActiveTextEditor(onDidChangeActiveTextEditor),
         zigProvider.onChange.event(() => {
@@ -817,5 +831,13 @@ export async function setupZig(context: vscode.ExtensionContext) {
         watcher2.onDidChange(refreshZigInstallation),
         watcher2.onDidDelete(refreshZigInstallation),
         watcher2,
+        watcher3.onDidCreate(refreshZigInstallation),
+        watcher3.onDidChange(refreshZigInstallation),
+        watcher3.onDidDelete(refreshZigInstallation),
+        watcher3,
+        watcher4.onDidCreate(refreshZigInstallation),
+        watcher4.onDidChange(refreshZigInstallation),
+        watcher4.onDidDelete(refreshZigInstallation),
+        watcher4,
     );
 }

@@ -253,3 +253,17 @@ export function isWorkspaceFile(filePath: string): boolean {
     if (!wsFolder) return false;
     return filePath.startsWith(wsFolder.uri.fsPath);
 }
+
+/** Returns true if the language ID is "zig" or "sig". */
+export function isZigOrSigLanguage(languageId: string): boolean {
+    return languageId === "zig" || languageId === "sig";
+}
+
+/** Document selector that matches both zig and sig files. */
+export const ZIG_SIG_MODE: vscode.DocumentSelector = [{ language: "zig" }, { language: "sig" }];
+
+/** Document selector that matches both zig and sig files with file scheme. */
+export const ZIG_SIG_FILE_MODE: vscode.DocumentSelector = [
+    { language: "zig", scheme: "file" },
+    { language: "sig", scheme: "file" },
+];

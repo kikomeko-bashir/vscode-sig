@@ -6,10 +6,10 @@ import util from "util";
 import { DocumentFormattingRequest, TextDocumentIdentifier } from "vscode-languageclient";
 
 import * as zls from "./zls";
+import { ZIG_SIG_MODE } from "./zigUtil";
 import { zigProvider } from "./zigSetup";
 
 const execFile = util.promisify(childProcess.execFile);
-const ZIG_MODE: vscode.DocumentSelector = { language: "zig" };
 
 export function registerDocumentFormatting(): vscode.Disposable {
     const disposables: vscode.Disposable[] = [];
@@ -30,7 +30,7 @@ export function registerDocumentFormatting(): vscode.Disposable {
                 registeredFormatter = null;
             } else {
                 // register the formatting provider
-                registeredFormatter ??= vscode.languages.registerDocumentRangeFormattingEditProvider(ZIG_MODE, {
+                registeredFormatter ??= vscode.languages.registerDocumentRangeFormattingEditProvider(ZIG_SIG_MODE, {
                     provideDocumentRangeFormattingEdits,
                 });
             }
@@ -64,7 +64,7 @@ function preCompileZigFmt() {
         });
     } catch (err) {
         if (err instanceof Error) {
-            void vscode.window.showErrorMessage(`Failed to run 'zig fmt': ${err.message}`);
+            void vscode.window.showErrorMessage(`Failed to run 'sig fmt': ${err.message}`);
         } else {
             throw err;
         }

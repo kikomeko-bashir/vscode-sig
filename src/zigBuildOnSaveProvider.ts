@@ -1,6 +1,7 @@
 import vscode from "vscode";
 
 import { handleConfigOption } from "./zigUtil";
+import { sigProvider } from "./zigSetup";
 
 export function registerBuildOnSaveProvider(): vscode.Disposable {
     return new BuildOnSaveProvider();
@@ -57,21 +58,32 @@ class BuildOnSaveProvider implements vscode.Disposable {
             // The build file has been explicitly provided through a command line argument
         } else {
             const workspaceBuildZigUri = vscode.Uri.joinPath(folder.uri, "build.zig");
+            const workspaceBuildSigUri = vscode.Uri.joinPath(folder.uri, "build.sig");
+            let hasBuildFile = false;
             try {
-                await vscode.workspace.fs.stat(workspaceBuildZigUri);
-            } catch {
-                return;
+                await vscode.workspace.fs.stat(workspaceBuildSigUri);
+                hasBuildFile = true;
+            } catch {}
+            if (!hasBuildFile) {
+                try {
+                    await vscode.workspace.fs.stat(workspaceBuildZigUri);
+                    hasBuildFile = true;
+                } catch {}
             }
+            if (!hasBuildFile) return;
         }
+
+        // Prefer sig if available, fall back to zig
+        const compilerCmd = sigProvider.getSigPath() ?? "zig";
 
         const task = new vscode.Task(
             {
                 type: "zig",
             },
             folder,
-            "Zig Watch",
-            "zig",
-            new vscode.ShellExecution("zig", ["build", "--watch", ...buildOnSaveArgs], {}),
+            "Sig Watch",
+            "sig",
+            new vscode.ShellExecution(compilerCmd, ["build", "--watch", ...buildOnSaveArgs], {}),
             "zig",
         );
         task.isBackground = true;
