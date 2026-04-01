@@ -3,7 +3,7 @@
   "displayName": "Sig",
   "description": "Sig — Strict Zig. A capacity-first memory model layer on top of the Zig compiler.",
   "version": "0.6.18",
-  "publisher": "sb0ltd",
+  "publisher": "kikomekobashir",
   "icon": "images/zig-icon.png",
   "license": "MIT",
   "repository": {
@@ -28,13 +28,13 @@
     "configurationDefaults": {
       "[zig]": {
         "editor.formatOnSave": true,
-        "editor.defaultFormatter": "sb0ltd.vscode-sig",
+        "editor.defaultFormatter": "kikomekobashir.vscode-sig",
         "editor.stickyScroll.defaultModel": "foldingProviderModel",
         "files.eol": "\n"
       },
       "[sig]": {
         "editor.formatOnSave": true,
-        "editor.defaultFormatter": "sb0ltd.vscode-sig",
+        "editor.defaultFormatter": "kikomekobashir.vscode-sig",
         "editor.stickyScroll.defaultModel": "foldingProviderModel",
         "files.eol": "\n"
       },
